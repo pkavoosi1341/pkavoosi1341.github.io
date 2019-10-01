@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Project 1 - sample code 2</title>
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+	<style>
+    	text { 
+			font-family: Arial; 
+			font-size: 15px;
+		}
+		.axis path, .axis line {
+			fill: none;
+			stroke: black;
+			shape-rendering: crispEdges;
+		}
+		.tick text {
+			fill: black;
+			font-size: 11px;
+		}
+
+		rect {
+			stroke: white;
+		}
+	</style>
+</head>
+<body>
+
+	<svg id="main" width="600" height="600">
+		<text id='label' x='20' y='20'>Energy prodcution for the US</text>
+		<g transform="translate(30,40)"></g>
+	</svg>
+
+	
+	<script>
+
+		var CHART_WIDTH = 400;
+		var CHART_HEIGHT = 130;
+
+		var MAX_BAR_HEIGHT = 100;
+
+		var energyProduction = [];
+
+		function drawLineChart() 
+		{
+			//find maximum value of y (production)
+            var maxValue = 100; //xsdfsd
+            var minValue;
+			
+			maxValue = d3.max(energyProduction, function(d) {
+				return d.production;
+			});
+
+            minValue = d3.min(energyProduction, function(d) {
+				return d.production;
+			});
+			
+            //scale is a way to map between two quantities
+			var xScale = d3.scale.linear();
+			var yScale = d3.scale.linear();
+
+            //range is pixel value that we get for domain. we determine how wide or tall our //graph is by defining range
+			xScale.domain([1980, 2012]).range([0, 400]);
+			
+            //we also can use reverse() function to reverse y-axis below is not complete
+  			//yScale.domain([0, maxValue] ).range([CHART_HEIGHT,0] );          
+			yScale.domain([0, maxValue] ).range([CHART_HEIGHT,0] );
+//handy for project1 - pathGenerator
+            //has two property x and y, single path 
+			var pathGenerator = d3.svg.line()
+				.x(function(d) { return xScale(d.year) })
+				.y(function(d) { return yScale(d.production) })
+
+			var g = d3.select('svg').select('g');
+
+//
+			var xAxis = d3.svg.axis()
+    			.scale(xScale)
+    			.orient('bottom')
+            //tickFormat this way forced to generate a string and return a string (key is "")
+    			.tickFormat(function(d) { return "" + d; })
+
+    		var yAxis = d3.svg.axis()
+    			.scale(yScale)
+    			.orient('left');
+
+//appending a new group to svg and use it to house xAxis. transform all the way down
+    		g.append('g')
+    			.attr('class', 'axis')
+    			.attr('transform', 'translate(0,' + CHART_HEIGHT + ')')
+    			.call(xAxis);
+
+    		g.append('g')
+    			.attr('class', 'axis')
+    			.call(yAxis);
+
+    		g.append('path')
+    			.style('fill', 'none')
+    			.style('stroke', 'steelblue')
+    			.style('stroke-width', '3px')
+            //d attr define the behavior of the path
+    			.attr('d', pathGenerator(energyProduction));
+
+
+		}
+			
+
+		d3.csv('energy_us.csv', function(data) 
+		{
+			var record = data[0];
+				
+			// loop through all years, from 1980 to 2012
+			for (var y=1980; y<=2012; y++) 
+			{
+				var value = record[y];
+				var object = {
+					year: y,
+					production: +value
+				};
+
+				energyProduction.push(object);
+			}
+			drawLineChart();
+
+		});
+		
+	</script>
+</body>
+
+
+</html>
